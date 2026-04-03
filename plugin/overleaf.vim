@@ -131,20 +131,7 @@ function! s:get_cookie() abort
   return $OVERLEAF_COOKIE
 endfunction
 
-" Statusline function
+" Statusline function (delegates to Lua API)
 function! overleaf#statusline() abort
-  try
-    let l:state = denops#request('overleaf', 'getState', [])
-    if l:state ==# 'connected'
-      return '[OL:ok]'
-    elseif l:state ==# 'reconnecting'
-      return '[OL:...]'
-    elseif l:state ==# 'disconnected'
-      return ''
-    else
-      return '[OL:' .. l:state .. ']'
-    endif
-  catch
-    return ''
-  endtry
+  return luaeval('require("overleaf").get_state()')
 endfunction
