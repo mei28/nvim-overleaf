@@ -1,5 +1,7 @@
 # nvim-overleaf
 
+[![CI](https://github.com/mei28/nvim-overleaf/actions/workflows/ci.yml/badge.svg)](https://github.com/mei28/nvim-overleaf/actions/workflows/ci.yml)
+
 [Japanese / 日本語](README.ja.md)
 
 Neovim plugin for real-time bidirectional sync with [Overleaf](https://www.overleaf.com).
@@ -117,18 +119,71 @@ Then just edit files and `:w`. Changes push to Overleaf automatically. Collabora
 
 ### Statusline
 
+The plugin exposes a Lua API that returns raw state, so you can format it however you like.
+
+#### Lua API
+
 ```lua
--- lualine.nvim
-require('lualine').setup {
-  sections = {
-    lualine_x = {
-      { function() return vim.fn['overleaf#statusline']() end },
-    },
-  },
+require('overleaf').get_state()
+-- => "connected" | "connecting" | "authenticating" | "reconnecting" | "disconnected"
+
+require('overleaf').get_status()
+-- => { state = "connected", projectName = "my-thesis", openDocs = 2, syncedFiles = 5, ... }
+```
+
+#### lualine.nvim examples
+
+Minimal:
+
+```lua
+{
+  function()
+    return 'OL'
+  end,
+  cond = function()
+    return require('overleaf').get_state() == 'connected'
+  end,
 }
 ```
 
-Shows `[OL:ok]` when connected, `[OL:...]` during reconnection.
+With connection state:
+
+```lua
+{
+  function()
+    local state = require('overleaf').get_state()
+    if state == 'connected' then return 'OL' end
+    if state == 'reconnecting' then return 'OL …' end
+    if state == 'connecting' or state == 'authenticating' then return 'OL …' end
+    return ''
+  end,
+  cond = function()
+    return require('overleaf').get_state() ~= 'disconnected'
+  end,
+}
+```
+
+With project name:
+
+```lua
+{
+  function()
+    local status = require('overleaf').get_status()
+    if status.state == 'connected' then
+      return 'OL: ' .. (status.projectName or '?')
+    end
+    if status.state ~= 'disconnected' then
+      return 'OL: ' .. status.state
+    end
+    return ''
+  end,
+  cond = function()
+    return require('overleaf').get_state() ~= 'disconnected'
+  end,
+}
+```
+
+The legacy `overleaf#statusline()` VimScript function is still available; it returns the raw state string.
 
 ## How it works
 

@@ -1,5 +1,7 @@
 # nvim-overleaf
 
+[![CI](https://github.com/mei28/nvim-overleaf/actions/workflows/ci.yml/badge.svg)](https://github.com/mei28/nvim-overleaf/actions/workflows/ci.yml)
+
 [Overleaf](https://www.overleaf.com) とリアルタイム双方向同期する Neovim プラグイン。
 
 LaTeX プロジェクトをローカルのファイルとして編集できます。保存すると Overleaf に反映され、共同編集者の変更はリアルタイムにローカルファイルへ書き出されます。
@@ -116,18 +118,71 @@ my-thesis/
 
 ### ステータスライン
 
+Lua API で生の状態文字列を取得できるため、表示フォーマットを自由にカスタマイズできます。
+
+#### Lua API
+
 ```lua
--- lualine.nvim
-require('lualine').setup {
-  sections = {
-    lualine_x = {
-      { function() return vim.fn['overleaf#statusline']() end },
-    },
-  },
+require('overleaf').get_state()
+-- => "connected" | "connecting" | "authenticating" | "reconnecting" | "disconnected"
+
+require('overleaf').get_status()
+-- => { state = "connected", projectName = "my-thesis", openDocs = 2, syncedFiles = 5, ... }
+```
+
+#### lualine.nvim の設定例
+
+シンプル:
+
+```lua
+{
+  function()
+    return 'OL'
+  end,
+  cond = function()
+    return require('overleaf').get_state() == 'connected'
+  end,
 }
 ```
 
-接続中は `[OL:ok]`、再接続中は `[OL:...]` と表示されます。
+接続状態つき:
+
+```lua
+{
+  function()
+    local state = require('overleaf').get_state()
+    if state == 'connected' then return 'OL' end
+    if state == 'reconnecting' then return 'OL …' end
+    if state == 'connecting' or state == 'authenticating' then return 'OL …' end
+    return ''
+  end,
+  cond = function()
+    return require('overleaf').get_state() ~= 'disconnected'
+  end,
+}
+```
+
+プロジェクト名つき:
+
+```lua
+{
+  function()
+    local status = require('overleaf').get_status()
+    if status.state == 'connected' then
+      return 'OL: ' .. (status.projectName or '?')
+    end
+    if status.state ~= 'disconnected' then
+      return 'OL: ' .. status.state
+    end
+    return ''
+  end,
+  cond = function()
+    return require('overleaf').get_state() ~= 'disconnected'
+  end,
+}
+```
+
+従来の VimScript 関数 `overleaf#statusline()` も引き続き利用可能です（生の state 文字列を返します）。
 
 ## 仕組み
 
