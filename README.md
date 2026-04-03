@@ -1,4 +1,4 @@
-# overleaf.nvim
+# nvim-overleaf
 
 [Japanese / 日本語](README.ja.md)
 
@@ -28,7 +28,7 @@ Edit your LaTeX projects locally in Neovim. Changes sync to Overleaf on save, an
 
 ```lua
 {
-  'your-username/overleaf.nvim',
+  'mei28/nvim-overleaf',
   dependencies = {
     'vim-denops/denops.vim',
   },
