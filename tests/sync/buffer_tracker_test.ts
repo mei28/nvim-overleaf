@@ -1,5 +1,5 @@
 import { assertEquals } from 'https://deno.land/std@0.224.0/assert/mod.ts';
-import { onBytesToOps, type OnBytesParams } from '../../denops/overleaf/sync/buffer_tracker.ts';
+import { type OnBytesParams, onBytesToOps } from '../../denops/overleaf/sync/buffer_tracker.ts';
 
 function makeParams(overrides: Partial<OnBytesParams>): OnBytesParams {
   return {

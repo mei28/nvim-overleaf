@@ -98,7 +98,9 @@ Deno.test('Document - remote op transforms against inflight', () => {
 Deno.test('Document - remote op with version mismatch triggers error', () => {
   const doc = makeDoc('ab', 5);
   let errorMsg = '';
-  doc.onError = (msg) => { errorMsg = msg; };
+  doc.onError = (msg) => {
+    errorMsg = msg;
+  };
 
   doc.onRemoteOp({ op: [{ i: 'X', p: 0 }], v: 3 }); // v=3 but doc is at v=5
 

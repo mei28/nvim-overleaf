@@ -13,7 +13,7 @@ import type { Identity } from '../auth/authenticator.ts';
 import type { OpList } from '../ot/types.ts';
 import { EventEmitter } from '../util/event_emitter.ts';
 import { logger } from '../util/logger.ts';
-import { decodeLines, decodeLatin1 } from '../util/encoding.ts';
+import { decodeLatin1, decodeLines } from '../util/encoding.ts';
 
 interface OverleafConnectionEvents {
   joinProjectResponse: (data: JoinProjectResponse) => void;

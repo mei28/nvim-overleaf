@@ -3,7 +3,7 @@
 
 import { Document } from './document.ts';
 import type { OverleafConnection } from '../protocol/overleaf_connection.ts';
-import type { OtUpdate, JoinDocResult } from '../protocol/overleaf_events.ts';
+import type { JoinDocResult, OtUpdate } from '../protocol/overleaf_events.ts';
 import type { OpList } from '../ot/types.ts';
 import { logger } from '../util/logger.ts';
 

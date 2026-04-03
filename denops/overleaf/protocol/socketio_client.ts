@@ -2,13 +2,13 @@
 // Uses npm:ws for WebSocket (Deno's built-in WebSocket cannot send custom headers,
 // but Overleaf requires Cookie headers on the WebSocket upgrade for GCLB affinity).
 
-import { encodePacket, decodePacket } from './socketio_parser.ts';
+import { decodePacket, encodePacket } from './socketio_parser.ts';
 import {
   ConnectionState,
-  PacketType,
   type ConnectionStateValue,
   type HandshakeResult,
   type Packet,
+  PacketType,
   type SocketIOClientOptions,
 } from './socketio_types.ts';
 import { EventEmitter } from '../util/event_emitter.ts';

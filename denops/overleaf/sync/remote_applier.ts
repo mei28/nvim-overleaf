@@ -38,10 +38,19 @@ export async function applyRemoteOps(
       if (isInsert(op)) {
         const lines = op.i.split('\n');
         const endRow = row + lines.length - 1;
-        const endCol = lines.length === 1 ? col + new TextEncoder().encode(op.i).length : new TextEncoder().encode(lines[lines.length - 1]).length;
+        const endCol = lines.length === 1
+          ? col + new TextEncoder().encode(op.i).length
+          : new TextEncoder().encode(lines[lines.length - 1]).length;
 
         await denops.call('nvim_buf_set_text', bufnr, row, col, row, col, lines);
-        logger.debug('Applied insert at (%d,%d)->(%d,%d): %s', row, col, endRow, endCol, op.i.substring(0, 50));
+        logger.debug(
+          'Applied insert at (%d,%d)->(%d,%d): %s',
+          row,
+          col,
+          endRow,
+          endCol,
+          op.i.substring(0, 50),
+        );
 
         // Update content tracking
         const chars = Array.from(content);
@@ -54,7 +63,14 @@ export async function applyRemoteOps(
         const { row: endRow, col: endCol } = byteOffsetToRowCol(content, endByteOffset);
 
         await denops.call('nvim_buf_set_text', bufnr, row, col, endRow, endCol, ['']);
-        logger.debug('Applied delete at (%d,%d)->(%d,%d): %s', row, col, endRow, endCol, op.d.substring(0, 50));
+        logger.debug(
+          'Applied delete at (%d,%d)->(%d,%d): %s',
+          row,
+          col,
+          endRow,
+          endCol,
+          op.d.substring(0, 50),
+        );
 
         // Update content tracking
         const chars = Array.from(content);

@@ -10,7 +10,7 @@ import { Document } from './document/document.ts';
 import { ProjectStore } from './project/project_store.ts';
 import { readProjectConfig, writeProjectConfig } from './project/project_api.ts';
 import { FileSync } from './sync/file_sync.ts';
-import { parseOnBytesArgs, onBytesToOps } from './sync/buffer_tracker.ts';
+import { onBytesToOps, parseOnBytesArgs } from './sync/buffer_tracker.ts';
 import { applyRemoteOps } from './sync/remote_applier.ts';
 import { debounce } from './util/debounce.ts';
 import { logger } from './util/logger.ts';
@@ -216,7 +216,13 @@ export class App {
 
     // Detect filetype from extension
     const ext = path.split('.').pop() ?? '';
-    const ftMap: Record<string, string> = { tex: 'tex', bib: 'bib', sty: 'tex', cls: 'tex', txt: 'text' };
+    const ftMap: Record<string, string> = {
+      tex: 'tex',
+      bib: 'bib',
+      sty: 'tex',
+      cls: 'tex',
+      txt: 'text',
+    };
     const ft = ftMap[ext] ?? 'tex';
     await this.denops.call('nvim_buf_set_option', bufnr, 'filetype', ft);
 
@@ -407,7 +413,9 @@ export class App {
         const lines = doc.localContent.split('\n');
         await this.denops.cmd(`lua require('overleaf.bridge').set_applying_remote(${bufnr}, true)`);
         await this.denops.call('nvim_buf_set_lines', bufnr, 0, -1, false, lines);
-        await this.denops.cmd(`lua require('overleaf.bridge').set_applying_remote(${bufnr}, false)`);
+        await this.denops.cmd(
+          `lua require('overleaf.bridge').set_applying_remote(${bufnr}, false)`,
+        );
         binding.doc = doc;
         binding.flushDebounced = debounce(() => doc.flush(), 100);
       } catch (err) {
@@ -421,7 +429,9 @@ export class App {
     this.healthCheckTimer = setInterval(() => {
       if (this._state !== AppState.Connected) return;
       for (const [, binding] of this.bindings) {
-        if (binding.doc.state === 'idle' && binding.doc.serverContent !== binding.doc.localContent) {
+        if (
+          binding.doc.state === 'idle' && binding.doc.serverContent !== binding.doc.localContent
+        ) {
           logger.warn('Content drift detected for %s', binding.doc.docId);
           this.rejoinDoc(binding.doc.docId);
         }
@@ -454,7 +464,9 @@ export class App {
         const lines = binding.doc.localContent.split('\n');
         await this.denops.cmd(`lua require('overleaf.bridge').set_applying_remote(${bufnr}, true)`);
         await this.denops.call('nvim_buf_set_lines', bufnr, 0, -1, false, lines);
-        await this.denops.cmd(`lua require('overleaf.bridge').set_applying_remote(${bufnr}, false)`);
+        await this.denops.cmd(
+          `lua require('overleaf.bridge').set_applying_remote(${bufnr}, false)`,
+        );
       }
     }
   }

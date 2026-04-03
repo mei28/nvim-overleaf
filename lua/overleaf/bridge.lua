@@ -22,7 +22,20 @@ function M.attach(bufnr, plugin_name)
   M._attached[bufnr] = true
 
   vim.api.nvim_buf_attach(bufnr, false, {
-    on_bytes = function(_, buf, changedtick, start_row, start_col, byte_offset, old_end_row, old_end_col, old_end_byte, new_end_row, new_end_col, new_end_byte)
+    on_bytes = function(
+      _,
+      buf,
+      changedtick,
+      start_row,
+      start_col,
+      byte_offset,
+      old_end_row,
+      old_end_col,
+      old_end_byte,
+      new_end_row,
+      new_end_col,
+      new_end_byte
+    )
       if M._applying_remote[buf] then
         return
       end
