@@ -48,6 +48,10 @@ export const main: Entrypoint = (denops) => {
       return app.state;
     },
 
+    getMessages(): unknown {
+      return app.getMessages();
+    },
+
     setLogLevel(level: unknown): void {
       setLogLevel(String(level) as 'debug' | 'info' | 'warn' | 'error');
       logger.info('Log level set to %s', level);

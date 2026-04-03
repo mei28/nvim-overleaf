@@ -35,6 +35,7 @@ Edit your LaTeX projects locally in Neovim. Changes sync to Overleaf on save, an
     'vim-denops/denops.vim',
   },
   cmd = { 'OverleafInit', 'OverleafSync', 'OverleafStatus' },
+  opts = {},
 }
 ```
 
@@ -114,8 +115,29 @@ Then just edit files and `:w`. Changes push to Overleaf automatically. Collabora
 | `:OverleafSync` | Connect and sync. Uses saved cookie from `.overleaf/`. |
 | `:OverleafOpen` | Pick a document to open in a buffer with real-time OT sync. |
 | `:OverleafStatus` | Show connection state and project info. |
+| `:OverleafMessages` | Show activity log (connection, sync, errors). |
 | `:OverleafDisconnect` | Disconnect from Overleaf. |
 | `:OverleafLogLevel {level}` | Set log verbosity (`debug` `info` `warn` `error`). |
+
+### Configuration
+
+```lua
+require('overleaf').setup({
+  autoread = true, -- silently reload buffers on remote changes (default: true)
+})
+```
+
+When using Lazy.nvim, pass options via `opts`:
+
+```lua
+{
+  'mei28/nvim-overleaf',
+  dependencies = { 'vim-denops/denops.vim' },
+  opts = {
+    autoread = true,
+  },
+}
+```
 
 ### Statusline
 
