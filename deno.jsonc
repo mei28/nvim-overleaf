@@ -1,0 +1,27 @@
+{
+  "imports": {
+    "@denops/std": "jsr:@denops/std@^8.0.0",
+    "ws": "npm:ws@^8.18.0"
+  },
+  "tasks": {
+    "check": "deno check denops/overleaf/**/*.ts",
+    "test": "deno test --allow-read --allow-net --allow-env tests/",
+    "fmt": "deno fmt denops/ tests/",
+    "lint": "deno lint denops/ tests/"
+  },
+  "compilerOptions": {
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
+  },
+  "fmt": {
+    "lineWidth": 100,
+    "semiColons": true,
+    "singleQuote": true
+  },
+  "lint": {
+    "rules": {
+      "tags": ["recommended"]
+    }
+  }
+}

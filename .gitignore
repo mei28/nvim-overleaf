@@ -1,0 +1,16 @@
+# Deno
+.deno/
+
+# Neovim
+.tmp/
+
+# OS
+.DS_Store
+
+# Editor
+*.swp
+*.swo
+*~
+
+# Claude
+.claude/
