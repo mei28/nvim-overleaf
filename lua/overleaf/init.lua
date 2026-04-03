@@ -1,5 +1,25 @@
 local M = {}
 
+---@class OverleafConfig
+---@field autoread boolean Silently reload buffers on remote changes (default: true)
+
+---@type OverleafConfig
+local defaults = {
+  autoread = true,
+}
+
+---@type OverleafConfig
+M.config = vim.deepcopy(defaults)
+
+--- Configure the plugin. Call from Lazy opts or manually.
+---@param opts OverleafConfig?
+function M.setup(opts)
+  M.config = vim.tbl_deep_extend('force', defaults, opts or {})
+  if M.config.autoread then
+    vim.o.autoread = true
+  end
+end
+
 --- Get the current connection state as a raw string.
 ---@return "connected" | "authenticating" | "connecting" | "reconnecting" | "disconnected"
 function M.get_state()
