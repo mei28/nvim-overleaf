@@ -32,6 +32,14 @@ interface BufferBinding {
   flushDebounced: (() => void) & { cancel: () => void };
 }
 
+interface LogEntry {
+  time: string;
+  level: 'info' | 'warn' | 'error';
+  msg: string;
+}
+
+const MAX_LOG_ENTRIES = 200;
+
 export class App {
   private denops: Denops;
   private identity: Identity | null = null;
@@ -43,6 +51,7 @@ export class App {
   private fileSync: FileSync | null = null;
   private healthCheckTimer: number | null = null;
   private cwd = '';
+  private messageLog: LogEntry[] = [];
 
   private bindings = new Map<number, BufferBinding>();
   private docToBuffer = new Map<string, number>();
@@ -93,8 +102,7 @@ export class App {
       return false;
     }
 
-    logger.info('Syncing project %s', config.projectName);
-    this.notify(`Connecting to ${config.projectName}...`);
+    this.log(`Connecting to ${config.projectName}...`);
 
     await this.connect(cookie, config.serverUrl);
     await this.openProject(config.projectId);
@@ -112,11 +120,11 @@ export class App {
   /** Authenticate with Overleaf. */
   async connect(cookie: string, serverUrl?: string): Promise<void> {
     this._state = AppState.Authenticating;
-    this.notify('Authenticating...');
+    this.log('Authenticating...');
 
     try {
       this.identity = await authenticate({ cookie, serverUrl });
-      this.notify('Authenticated with Overleaf');
+      this.log('Authenticated with Overleaf');
     } catch (err) {
       this._state = AppState.Disconnected;
       throw err;
@@ -172,8 +180,7 @@ export class App {
     }
 
     const docs = this.projectStore.getDocs();
-    logger.info('Syncing %d documents to disk', docs.length);
-    this.notify(`Syncing ${docs.length} files...`);
+    this.log(`Syncing ${docs.length} files...`);
 
     for (const mapping of docs) {
       try {
@@ -185,7 +192,9 @@ export class App {
 
         // When remote changes arrive, write updated content to disk
         doc.onRemoteApply = () => {
-          this.fileSync?.writeFile(mapping.localPath, doc.localContent).catch((err) => {
+          this.fileSync?.writeFile(mapping.localPath, doc.localContent).then(() => {
+            this.silentChecktime();
+          }).catch((err) => {
             logger.error('Failed to write remote change for %s: %s', mapping.remotePath, err);
           });
         };
@@ -471,10 +480,35 @@ export class App {
     }
   }
 
+  /** Silently reload buffers that were modified on disk by remote changes. */
+  private silentChecktime(): void {
+    this.denops.cmd('silent! checktime').catch(() => {});
+  }
+
+  /** Log a message (visible via :OverleafMessages, not shown to user). */
+  private log(msg: string, level: 'info' | 'warn' | 'error' = 'info'): void {
+    const entry: LogEntry = {
+      time: new Date().toLocaleTimeString(),
+      level,
+      msg,
+    };
+    this.messageLog.push(entry);
+    if (this.messageLog.length > MAX_LOG_ENTRIES) {
+      this.messageLog.splice(0, this.messageLog.length - MAX_LOG_ENTRIES);
+    }
+    logger[level]?.('%s', msg) ?? logger.info('%s', msg);
+  }
+
+  /** Show a notification to the user AND log it. */
   private notify(msg: string, level: 'info' | 'warn' | 'error' = 'info'): void {
+    this.log(msg, level);
     const lvlMap = { info: 2, warn: 3, error: 4 };
     this.denops.cmd(
       `lua vim.notify("[overleaf] ${msg.replace(/"/g, '\\"')}", ${lvlMap[level]})`,
     ).catch(() => {});
+  }
+
+  getMessages(): LogEntry[] {
+    return this.messageLog;
   }
 }

@@ -13,6 +13,7 @@ function! s:on_ready() abort
   command! -nargs=0 OverleafOpen call s:open()
   command! -nargs=0 OverleafStatus call s:show_status()
   command! -nargs=0 OverleafDisconnect call denops#request('overleaf', 'disconnect', [])
+  command! -nargs=0 OverleafMessages call s:show_messages()
   command! -nargs=1 OverleafLogLevel call denops#request('overleaf', 'setLogLevel', [<q-args>])
 endfunction
 
@@ -124,6 +125,31 @@ function! s:show_status() abort
     echo '  Permissions: ' .. l:status.permissions
     echo '  Synced files:' .. l:status.syncedFiles
   endif
+endfunction
+
+" --- Messages viewer ---
+function! s:show_messages() abort
+  try
+    let l:msgs = denops#request('overleaf', 'getMessages', [])
+  catch
+    echo 'Overleaf: not loaded'
+    return
+  endtry
+  if empty(l:msgs)
+    echo 'No messages.'
+    return
+  endif
+  let l:lines = []
+  for l:m in l:msgs
+    let l:prefix = l:m.level ==# 'error' ? 'E' : l:m.level ==# 'warn' ? 'W' : ' '
+    call add(l:lines, printf('[%s] %s %s', l:prefix, l:m.time, l:m.msg))
+  endfor
+
+  belowright new
+  setlocal buftype=nofile bufhidden=wipe noswapfile nowrap
+  call setline(1, ['=== Overleaf Messages ==='] + l:lines)
+  setlocal nomodifiable
+  normal! G
 endfunction
 
 " --- Helpers ---
